@@ -61,15 +61,8 @@ st.markdown("""
 st.title("🏥 MedData Core: Clinical Router")
 st.markdown("### Il motore di smistamento definitivo per i trial clinici.")
 
-with st.sidebar:
-    st.header("⚙️ Impostazioni API")
-    api_key_input = st.text_input("Inserisci Gemini API Key", type="password")
-    
-    if api_key_input:
-        st.session_state["gemini_key"] = api_key_input
-        st.success("Chiave API caricata!")
-    else:
-        st.warning("Inserisci una API Key per sbloccare la traduzione AI avanzata.")
+# Barra laterale rimossa per mantenere l'interfaccia pulita per i medici.
+# La chiave API verrà letta automaticamente dalle Streamlit Secrets (st.secrets o os.environ).
 
 tab1, tab2 = st.tabs(["🔍 Router Clinico", "📊 Analytics Dashboard"])
 
@@ -88,12 +81,8 @@ with tab1:
             # Processing Visivo
             with st.spinner("🤖 L'intelligenza Artificiale sta traducendo ed espandendo la query..."):
                 time.sleep(0.8) # Piccola pausa scenica per simulare il caricamento LLM
-                
-                # Prendi la chiave API dalla sessione
-                current_api_key = st.session_state.get("gemini_key")
-                
-                # Richiamo la funzione dal modulo originale
-                results, synonyms = clinical_router.find_best_matches_semantic(query, api_key=current_api_key)
+                # Richiamo la funzione dal modulo originale (leggerà la chiave da os.environ)
+                results, synonyms = clinical_router.find_best_matches_semantic(query)
             
             st.success("Ricerca completata!")
             

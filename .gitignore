@@ -1,0 +1,16 @@
+# Node and Python Virtual Environments
+node_modules/
+venv/
+env/
+__pycache__/
+*.pyc
+
+# Environment Variables
+.env
+
+# Staging Area (Raw Data is heavy and shouldn't be tracked)
+staging_area/raw/
+staging_area/normalized/
+
+# Note: clinical_data.db is NOT ignored on purpose, 
+# because Streamlit Community Cloud needs it to run the dashboard!

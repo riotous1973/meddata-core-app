@@ -55,8 +55,9 @@ def expand_query(natural_query, api_key=None):
         prompt = (
             f"Sei un assistente medico per la ricerca di Trial Clinici. "
             f"L'utente ha inserito questa patologia/sintomo (spesso in italiano, colloquiale o con errori ortografici): '{natural_query}'. "
-            f"Per prima cosa correggi mentalmente eventuali errori (es. 'allopecia' -> 'alopecia'). Poi traduci ed espandi questo concetto nei 3 o 4 termini scientifici/medici in inglese (MeSH terms) più usati nei database dei trial clinici. "
-            f"Restituisci SOLO una lista di termini separati da virgola. Non aggiungere altre parole, spiegazioni o punteggiatura."
+            f"Per prima cosa correggi mentalmente eventuali errori (es. 'allopecia' -> 'alopecia'). Poi traduci ed espandi questo concetto nei 3 o 4 termini scientifici/medici (MeSH terms) più usati nei database dei trial clinici. "
+            f"REGOLA FERREA: I termini estratti DEVONO ESSERE TASSATIVAMENTE IN INGLESE (es. se l'utente scrive 'diabete', tu devi restituire 'Diabetes', se scrive 'emoglobina glicata' restituisci 'Glycated Hemoglobin'). "
+            f"Restituisci SOLO una lista di termini in inglese separati da virgola. Non aggiungere altre parole, spiegazioni o punteggiatura."
         )
         
         response = client.models.generate_content(

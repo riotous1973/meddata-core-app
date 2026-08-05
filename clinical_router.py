@@ -45,8 +45,15 @@ def expand_query(natural_query, api_key=None):
     print(f"\n🧠 [AI Semantic Layer] Contatto il vero LLM per la query: '{natural_query}'...")
     
     api_key = api_key or os.environ.get("GEMINI_API_KEY")
+    
+    if not api_key:
+        try:
+            api_key = st.secrets.get("GEMINI_API_KEY")
+        except Exception:
+            pass
+            
     if not genai or not api_key:
-        print("⚠️ Chiave GEMINI_API_KEY non trovata. Uso dizionario locale di fallback.")
+        print("⚠️ Libreria genai o chiave API mancante. Uso dizionario locale di fallback.")
         return advanced_fallback(natural_query)
 
     try:

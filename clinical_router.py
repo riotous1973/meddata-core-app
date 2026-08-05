@@ -48,13 +48,14 @@ def expand_query(natural_query, api_key=None):
     
     if not api_key:
         try:
+            import streamlit as st
             api_key = st.secrets.get("GEMINI_API_KEY")
         except Exception:
             pass
             
     if not genai or not api_key:
-        print("⚠️ Libreria genai o chiave API mancante. Uso dizionario locale di fallback.")
-        return advanced_fallback(natural_query)
+        # RETURN DEBUG INFO
+        return [f"DEBUG_INIT_FAILED: genai_loaded={bool(genai)}, api_key_found={bool(api_key)}"]
 
     try:
         client = genai.Client(api_key=api_key)
@@ -82,8 +83,7 @@ def expand_query(natural_query, api_key=None):
         return synonyms
         
     except Exception as e:
-        print(f"⚠️ Errore API Gemini (es. Rate Limit): {e}. Fallback avanzato attivato.")
-        return advanced_fallback(natural_query)
+        return [f"API_ERROR: {str(e)}"]
 
 @st.cache_data(show_spinner=False)
 def find_best_matches_semantic(natural_query, api_key=None):

@@ -67,8 +67,12 @@ def expand_query(natural_query, api_key=None):
             f"Restituisci SOLO una lista di termini in inglese separati da virgola. Non aggiungere altre parole, spiegazioni o punteggiatura."
         )
         
+        if natural_query == "debug_models":
+            available_models = [m.name for m in client.models.list()]
+            return [f"MODELS_FOUND: {', '.join(available_models)}"]
+            
         response = client.models.generate_content(
-            model='gemini-3.0-flash',
+            model='gemini-2.0-flash',
             contents=prompt,
         )
         

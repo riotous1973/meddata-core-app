@@ -91,7 +91,7 @@ with tab1:
             st.divider()
             
             if not results:
-                st.warning(f"⚠️ **Nessun trial trovato per '{query}'.**\n\nQuesto può accadere se il termine è troppo specifico, contiene errori di battitura non correggibili, oppure se la **Chiave API Gemini** non è stata inserita correttamente nelle impostazioni 'Secrets' (costringendo il sistema a una ricerca testuale esatta anziché semantica).\n\nProva a usare termini più ampi o verifica la configurazione dell'API.")
+                st.warning(f"⚠️ **Nessun trial clinico in corso trovato per '{query}'.**\n\nQuesto può accadere se la patologia è troppo specifica o se non ci sono trial registrati al momento.\n\n*Suggerimento: Prova a utilizzare una classificazione diagnostica più ampia.*")
             else:
                 st.markdown(f"### Trovati {len(results)} Top Match:")
                 

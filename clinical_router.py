@@ -54,8 +54,7 @@ def expand_query(natural_query, api_key=None):
             pass
             
     if not genai or not api_key:
-        # RETURN DEBUG INFO
-        return [f"DEBUG_INIT_FAILED: genai_loaded={bool(genai)}, api_key_found={bool(api_key)}"]
+        return advanced_fallback(natural_query)
 
     try:
         client = genai.Client(api_key=api_key)
@@ -83,7 +82,8 @@ def expand_query(natural_query, api_key=None):
         return synonyms
         
     except Exception as e:
-        return [f"API_ERROR: {str(e)}"]
+        print(f"⚠️ Errore API Gemini: {e}")
+        return advanced_fallback(natural_query)
 
 @st.cache_data(show_spinner=False)
 def find_best_matches_semantic(natural_query, api_key=None):

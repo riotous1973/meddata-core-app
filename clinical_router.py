@@ -107,7 +107,8 @@ def find_best_matches_semantic(natural_query, api_key=None):
         query += ' OR conditions LIKE ? OR title LIKE ?'
         params.extend([f'%{syn}%', f'%{syn}%'])
         
-    query += ' LIMIT 5'
+    # Aggiungiamo un ORDER BY per dare priorità ai trial clinici veri e propri (source='ClinicalTrials')
+    query += ' ORDER BY source ASC LIMIT 5'
     
     cursor.execute(query, params)
     results = cursor.fetchall()

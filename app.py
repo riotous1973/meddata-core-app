@@ -97,14 +97,50 @@ with tab1:
                 
                 # Rendering dei risultati in "Cards"
                 for row in results:
-                    study_id, title, conditions, phases = row
+                    study_id, title, conditions, phases, status, start_date, comp_date, has_res, why_stopped = row
+                    
+                    # Logica semaforo
+                    status_upper = (status or "").upper()
+                    status_icon = "⚪"
+                    status_color = "#555555" # Default gray
+                    
+                    if "RECRUITING" in status_upper or "ACTIVE" in status_upper:
+                        status_icon = "🟢"
+                        status_color = "#2e7d32"
+                    elif "COMPLETED" in status_upper or "PUBLISHED" in status_upper:
+                        status_icon = "🔵"
+                        status_color = "#1565c0"
+                    elif "TERMINATED" in status_upper or "WITHDRAWN" in status_upper or "SUSPENDED" in status_upper:
+                        status_icon = "🔴"
+                        status_color = "#c62828"
+                        
+                    # Warning Motivo Stop
+                    why_stopped_html = ""
+                    if why_stopped and "🔴" in status_icon:
+                        why_stopped_html = f'<div style="margin-top: 10px; padding: 8px; background-color: #3b1515; border-left: 3px solid #ff4444; color: #ff8888; font-size: 0.9em;">⚠️ <b>Interrotto:</b> {why_stopped}</div>'
+                        
+                    # Date info
+                    date_info = f"📅 {start_date or '?'} ➔ {comp_date or '?'}"
+                    
+                    # Risultati
+                    res_badge = '<span class="badge" style="background-color: #b8860b; color: white;">🏆 Risultati Disponibili</span>' if has_res else ""
                     
                     card_html = f"""
                     <div class="stCard">
-                        <div class="study-id">🆔 <a href="https://clinicaltrials.gov/study/{study_id}" target="_blank">{study_id}</a></div>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div class="study-id">🆔 <a href="https://clinicaltrials.gov/study/{study_id}" target="_blank">{study_id}</a></div>
+                            <div>
+                                <span class="badge" style="background-color: {status_color}; color: white; border: 1px solid {status_color};">{status_icon} {status or 'UNKNOWN'}</span>
+                                {res_badge}
+                            </div>
+                        </div>
                         <div class="study-title">{title}</div>
                         <div><span class="badge">🦠 {conditions[:100]}{'...' if len(conditions)>100 else ''}</span></div>
-                        <div style="margin-top: 8px;"><span class="badge">📈 {phases}</span></div>
+                        <div style="margin-top: 8px;">
+                            <span class="badge">📈 {phases}</span>
+                            <span class="badge">{date_info}</span>
+                        </div>
+                        {why_stopped_html}
                     </div>
                     """
                     st.markdown(card_html, unsafe_allow_html=True)

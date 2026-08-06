@@ -36,6 +36,14 @@ def parse_study(study_data):
     interv_mod = protocol.get("armsInterventionsModule", {})
     interventions_raw = interv_mod.get("interventions", [])
     interventions = [clean_text(i.get("name", "")) for i in interventions_raw if i.get("name")]
+    
+    # Status, Dates, Results, Why Stopped
+    status_mod = protocol.get("statusModule", {})
+    overall_status = status_mod.get("overallStatus", "UNKNOWN")
+    why_stopped = clean_text(status_mod.get("whyStopped", ""))
+    start_date = status_mod.get("startDateStruct", {}).get("date", "")
+    completion_date = status_mod.get("primaryCompletionDateStruct", {}).get("date", "")
+    has_results = study_data.get("hasResults", False)
 
     return {
         "study_id": nct_id,
@@ -43,7 +51,12 @@ def parse_study(study_data):
         "conditions": conditions,
         "phases": phases,
         "interventions": interventions,
-        "source": "ClinicalTrials"
+        "source": "ClinicalTrials",
+        "status": overall_status,
+        "start_date": start_date,
+        "completion_date": completion_date,
+        "has_results": has_results,
+        "why_stopped": why_stopped
     }
 
 def parse_pubmed_article(article_data):
@@ -92,13 +105,30 @@ def parse_pubmed_article(article_data):
         val = kw.get("_", kw) if isinstance(kw, dict) else kw
         interventions.append(clean_text(val))
         
+    # PubMed literature is considered completed research
+    overall_status = "Completed"
+    why_stopped = ""
+    has_results = True
+    
+    # Extract Publication Date for start/completion dates
+    pub_date = article_info.get("Journal", {}).get("JournalIssue", {}).get("PubDate", {})
+    year = pub_date.get("Year", "")
+    month = pub_date.get("Month", "")
+    start_date = f"{year} {month}".strip()
+    completion_date = start_date
+
     return {
         "study_id": nct_id,
         "title": title,
         "conditions": conditions,
         "phases": phases,
         "interventions": interventions,
-        "source": "PubMed"
+        "source": "PubMed",
+        "status": overall_status,
+        "start_date": start_date,
+        "completion_date": completion_date,
+        "has_results": has_results,
+        "why_stopped": why_stopped
     }
 
 def main():

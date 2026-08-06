@@ -20,7 +20,12 @@ def init_db():
             conditions TEXT,
             phases TEXT,
             interventions TEXT,
-            source TEXT DEFAULT 'ClinicalTrials'
+            source TEXT DEFAULT 'ClinicalTrials',
+            status TEXT,
+            start_date TEXT,
+            completion_date TEXT,
+            has_results BOOLEAN,
+            why_stopped TEXT
         )
     ''')
     
@@ -47,14 +52,19 @@ def insert_records(records):
     cursor = conn.cursor()
     
     insert_query = '''
-        INSERT INTO studies (study_id, title, conditions, phases, interventions, source)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO studies (study_id, title, conditions, phases, interventions, source, status, start_date, completion_date, has_results, why_stopped)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(study_id) DO UPDATE SET
             title=excluded.title,
             conditions=excluded.conditions,
             phases=excluded.phases,
             interventions=excluded.interventions,
-            source=excluded.source
+            source=excluded.source,
+            status=excluded.status,
+            start_date=excluded.start_date,
+            completion_date=excluded.completion_date,
+            has_results=excluded.has_results,
+            why_stopped=excluded.why_stopped
     '''
     
     data_tuples = []
@@ -65,7 +75,12 @@ def insert_records(records):
             json.dumps(r.get("conditions", [])),
             json.dumps(r.get("phases", [])),
             json.dumps(r.get("interventions", [])),
-            r.get("source", "ClinicalTrials")
+            r.get("source", "ClinicalTrials"),
+            r.get("status"),
+            r.get("start_date"),
+            r.get("completion_date"),
+            r.get("has_results", False),
+            r.get("why_stopped")
         ))
         
     cursor.executemany(insert_query, data_tuples)

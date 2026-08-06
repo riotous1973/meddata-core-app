@@ -74,6 +74,15 @@ with tab1:
     # Area di Input
     query = st.text_input("Inserisci la patologia (es. 'Tumore al rene', 'Caduta dei capelli', 'Pressione alta')", placeholder="Cerca patologia...")
 
+    # Filtri di Intento
+    intent_options = {
+        "⚪ Ricerca Globale (Tutti i risultati)": "ALL",
+        "🟢 Trial Aperti (Solo Sperimentali)": "OPEN",
+        "🔵 Studi Conclusi & Letteratura": "COMPLETED"
+    }
+    selected_intent_label = st.radio("Filtra per stato del trial:", options=list(intent_options.keys()), horizontal=True)
+    selected_intent = intent_options[selected_intent_label]
+
     if st.button("Cerca Trial 🚀", type="primary"):
         if not query.strip():
             st.warning("Per favore, inserisci una patologia o un termine di ricerca.")
@@ -82,7 +91,7 @@ with tab1:
             with st.spinner("🤖 L'intelligenza Artificiale sta traducendo ed espandendo la query..."):
                 time.sleep(0.8) # Piccola pausa scenica per simulare il caricamento LLM
                 # Richiamo la funzione dal modulo originale (leggerà la chiave da os.environ)
-                results, synonyms = clinical_router.find_best_matches_semantic(query)
+                results, synonyms = clinical_router.find_best_matches_semantic(query, intent_filter=selected_intent)
             
             st.success("Ricerca completata!")
             

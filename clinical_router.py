@@ -85,9 +85,10 @@ def expand_query(natural_query, api_key=None):
         return [f"API_ERROR: {str(e)}"]
 
 @st.cache_data(show_spinner=False)
-def find_best_matches_semantic(natural_query, api_key=None):
+def find_best_matches_semantic(natural_query, api_key=None, intent_filter="ALL"):
     """
     Effettua la ricerca sul database usando l'array di termini espansi dinamicamente.
+    intent_filter può essere: 'OPEN', 'COMPLETED', 'ALL'
     """
     synonyms = expand_query(natural_query, api_key=api_key)
     
@@ -95,22 +96,32 @@ def find_best_matches_semantic(natural_query, api_key=None):
     cursor = conn.cursor()
     
     # Costruiamo la query dinamicamente. WHERE 1=0 serve per concatenare in sicurezza gli OR
-    query = '''
+    base_query = '''
         SELECT study_id, title, conditions, phases, status, start_date, completion_date, has_results, why_stopped
         FROM studies
-        WHERE 1=0
+        WHERE (1=0
     '''
     params = []
     
     # Per ogni sinonimo generato dall'AI, cerchiamo nella patologia o nel titolo
     for syn in synonyms:
-        query += ' OR conditions LIKE ? OR title LIKE ?'
+        base_query += ' OR conditions LIKE ? OR title LIKE ?'
         params.extend([f'%{syn}%', f'%{syn}%'])
         
-    # Aggiungiamo un ORDER BY per dare priorità ai trial clinici veri e propri (source='ClinicalTrials')
-    query += ' ORDER BY source ASC LIMIT 5'
+    base_query += ')'
     
-    cursor.execute(query, params)
+    # Logica Filtro Intent
+    if intent_filter == "OPEN":
+        base_query += " AND source='ClinicalTrials' AND (UPPER(status) LIKE '%RECRUITING%' OR UPPER(status) LIKE '%ACTIVE%')"
+    elif intent_filter == "COMPLETED":
+        base_query += " AND (UPPER(status) LIKE '%COMPLETED%' OR source='PubMed')"
+    else:
+        # Per 'ALL', manteniamo un ORDER BY di fallback se lo si desidera
+        pass
+        
+    base_query += ' LIMIT 5'
+    
+    cursor.execute(base_query, params)
     results = cursor.fetchall()
     conn.close()
     

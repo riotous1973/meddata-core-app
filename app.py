@@ -172,7 +172,7 @@ with tab1:
     {why_stopped_html}
 </div>
 """
-                    st.markdown(card_html, unsafe_allow_html=True)
+                    st.markdown(card_html.replace('\n', ''), unsafe_allow_html=True)
 
 
 with tab2:

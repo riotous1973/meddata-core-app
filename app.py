@@ -141,24 +141,37 @@ with tab1:
                     else:
                         study_url = f"https://clinicaltrials.gov/study/{study_id}"
                     
+                    # Pulizia stringhe array JSON per l'estetica
+                    try:
+                        cond_list = json.loads(conditions) if conditions else []
+                        cond_str = ", ".join(cond_list)
+                    except:
+                        cond_str = conditions
+                        
+                    try:
+                        phase_list = json.loads(phases) if phases else []
+                        phase_str = ", ".join(phase_list)
+                    except:
+                        phase_str = phases
+                        
                     card_html = f"""
-                    <div class="stCard">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                            <div class="study-id">🆔 <a href="{study_url}" target="_blank">{study_id}</a></div>
-                            <div>
-                                <span class="badge" style="background-color: {status_color}; color: white; border: 1px solid {status_color};">{status_icon} {status or 'UNKNOWN'}</span>
-                                {res_badge}
-                            </div>
-                        </div>
-                        <div class="study-title">{title}</div>
-                        <div><span class="badge">🦠 {conditions[:100]}{'...' if len(conditions)>100 else ''}</span></div>
-                        <div style="margin-top: 8px;">
-                            <span class="badge">📈 {phases}</span>
-                            <span class="badge">{date_info}</span>
-                        </div>
-                        {why_stopped_html}
-                    </div>
-                    """
+<div class="stCard">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div class="study-id">🆔 <a href="{study_url}" target="_blank">{study_id}</a></div>
+        <div>
+            <span class="badge" style="background-color: {status_color}; color: white; border: 1px solid {status_color};">{status_icon} {status or 'UNKNOWN'}</span>
+            {res_badge}
+        </div>
+    </div>
+    <div class="study-title">{title}</div>
+    <div><span class="badge">🦠 {cond_str[:100]}{'...' if len(cond_str)>100 else ''}</span></div>
+    <div style="margin-top: 8px;">
+        <span class="badge">📈 {phase_str}</span>
+        <span class="badge">{date_info}</span>
+    </div>
+    {why_stopped_html}
+</div>
+"""
                     st.markdown(card_html, unsafe_allow_html=True)
 
 

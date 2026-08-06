@@ -125,10 +125,17 @@ with tab1:
                     # Risultati
                     res_badge = '<span class="badge" style="background-color: #b8860b; color: white;">🏆 Risultati Disponibili</span>' if has_res else ""
                     
+                    # Generazione URL dinamica
+                    if study_id.startswith("PMID:"):
+                        pmid = study_id.split(":")[1]
+                        study_url = f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/"
+                    else:
+                        study_url = f"https://clinicaltrials.gov/study/{study_id}"
+                    
                     card_html = f"""
                     <div class="stCard">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                            <div class="study-id">🆔 <a href="https://clinicaltrials.gov/study/{study_id}" target="_blank">{study_id}</a></div>
+                            <div class="study-id">🆔 <a href="{study_url}" target="_blank">{study_id}</a></div>
                             <div>
                                 <span class="badge" style="background-color: {status_color}; color: white; border: 1px solid {status_color};">{status_icon} {status or 'UNKNOWN'}</span>
                                 {res_badge}

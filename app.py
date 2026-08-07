@@ -15,7 +15,8 @@ importlib.reload(clinical_router)
 st.set_page_config(
     page_title="MedData Core",
     page_icon="🏥",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
 # Custom CSS opzionale per migliorare le cards

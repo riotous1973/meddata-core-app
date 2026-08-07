@@ -56,12 +56,11 @@ st.markdown("""
         color: #e0e0e0;
     }
 
-    /* NASCONDE HEADER, MENU E FOOTER DI STREAMLIT */
+    /* NASCONDE MENU DESTRO E FOOTER, MA LASCIA IL PULSANTE SIDEBAR */
     #MainMenu {visibility: hidden;}
-    header {visibility: hidden;}
     footer {visibility: hidden;}
-    .stApp > header {visibility: hidden;}
-    [data-testid="stHeader"] {display: none;}
+    [data-testid="stToolbar"] {visibility: hidden;}
+    [data-testid="stStatusWidget"] {visibility: hidden;}
     </style>
 """, unsafe_allow_html=True)
 

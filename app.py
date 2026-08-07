@@ -57,9 +57,25 @@ st.markdown("""
         color: #e0e0e0;
     }
 
-    /* NASCONDE SOLO MENU HAMBURGER E FOOTER PER NON ROMPERE LA SIDEBAR */
+    /* NASCONDE IL MENU HAMBURGER E IL FOOTER */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
+    
+    /* NASCONDE I BADGE DI STREAMLIT CLOUD (FORK, GITHUB) */
+    .viewerBadge_container {display: none !important;}
+    .viewerBadge_link {display: none !important;}
+    #viewerBadge {display: none !important;}
+    a[href^="https://github.com"] {display: none !important;}
+    
+    /* AGGIUNGE TESTO AL PULSANTE DELLA SIDEBAR QUANDO È CHIUSA */
+    [data-testid="collapsedControl"]::after {
+        content: " 🧬 Apri Patient Profile";
+        margin-left: 10px;
+        font-weight: bold;
+        color: #b0b0b0;
+        vertical-align: middle;
+        line-height: 2.5;
+    }
     </style>
 """, unsafe_allow_html=True)
 

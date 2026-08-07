@@ -117,7 +117,7 @@ with tab1:
                 
                 # Rendering dei risultati in "Cards"
                 for row in results:
-                    study_id, title, conditions, phases, status, start_date, comp_date, has_res, why_stopped = row
+                    study_id, title, conditions, phases, status, start_date, comp_date, has_res, why_stopped, countries = row
                     
                     # Logica semaforo
                     status_upper = (status or "").upper()
@@ -164,6 +164,22 @@ with tab1:
                         phase_str = ", ".join(phase_list)
                     except:
                         phase_str = phases
+
+                    # Nazioni
+                    try:
+                        country_list = json.loads(countries) if countries else []
+                        if country_list:
+                            if "Italy" in country_list:
+                                c_style = "background-color: #008c45; color: white; border: 1px solid #f4f5f0;"
+                                country_str = "Italia 🇮🇹"
+                            else:
+                                c_style = ""
+                                country_str = ", ".join(country_list[:3]) + ("..." if len(country_list)>3 else "")
+                            country_badge = f'<span class="badge" style="{c_style}">🌍 {country_str}</span>'
+                        else:
+                            country_badge = ""
+                    except:
+                        country_badge = ""
                         
                     card_html = f"""
 <div class="stCard">
@@ -179,6 +195,7 @@ with tab1:
     <div style="margin-top: 8px;">
         <span class="badge">📈 {phase_str}</span>
         <span class="badge">{date_info}</span>
+        {country_badge}
     </div>
     {why_stopped_html}
 </div>

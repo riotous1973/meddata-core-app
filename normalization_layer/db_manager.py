@@ -25,7 +25,8 @@ def init_db():
             start_date TEXT,
             completion_date TEXT,
             has_results BOOLEAN,
-            why_stopped TEXT
+            why_stopped TEXT,
+            countries TEXT
         )
     ''')
     
@@ -52,8 +53,8 @@ def insert_records(records):
     cursor = conn.cursor()
     
     insert_query = '''
-        INSERT INTO studies (study_id, title, conditions, phases, interventions, source, status, start_date, completion_date, has_results, why_stopped)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO studies (study_id, title, conditions, phases, interventions, source, status, start_date, completion_date, has_results, why_stopped, countries)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(study_id) DO UPDATE SET
             title=excluded.title,
             conditions=excluded.conditions,
@@ -64,7 +65,8 @@ def insert_records(records):
             start_date=excluded.start_date,
             completion_date=excluded.completion_date,
             has_results=excluded.has_results,
-            why_stopped=excluded.why_stopped
+            why_stopped=excluded.why_stopped,
+            countries=excluded.countries
     '''
     
     data_tuples = []
@@ -80,7 +82,8 @@ def insert_records(records):
             r.get("start_date"),
             r.get("completion_date"),
             r.get("has_results", False),
-            r.get("why_stopped")
+            r.get("why_stopped"),
+            r.get("countries")
         ))
         
     cursor.executemany(insert_query, data_tuples)

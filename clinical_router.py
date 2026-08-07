@@ -97,7 +97,7 @@ def find_best_matches_semantic(natural_query, api_key=None, intent_filter="ALL")
     
     # Costruiamo la query dinamicamente. WHERE 1=0 serve per concatenare in sicurezza gli OR
     base_query = '''
-        SELECT study_id, title, conditions, phases, status, start_date, completion_date, has_results, why_stopped
+        SELECT study_id, title, conditions, phases, status, start_date, completion_date, has_results, why_stopped, countries
         FROM studies
         WHERE (1=0
     '''
@@ -143,12 +143,13 @@ def print_report_semantic(results, original_query, synonyms):
     print(f"Trovati {len(results)} Top Match:\n")
     
     for idx, row in enumerate(results, 1):
-        study_id, title, conditions, phases, status, start_date, comp_date, has_res, why_stopped = row
+        study_id, title, conditions, phases, status, start_date, comp_date, has_res, why_stopped, countries = row
         print(f"[{idx}] 🆔 ID Studio : {study_id}")
         print(f"    🏷️ Titolo    : {title[:80]}..." if len(title) > 80 else f"    🏷️ Titolo    : {title}")
         print(f"    🦠 Patologia : {conditions[:80]}..." if len(conditions) > 80 else f"    🦠 Patologia : {conditions}")
         print(f"    📈 Fase      : {phases}")
         print(f"    🚥 Status    : {status}")
+        print(f"    🌍 Paesi     : {countries}")
         print("-" * 80)
         
     print("="*80 + "\n")

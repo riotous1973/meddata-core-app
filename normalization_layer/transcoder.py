@@ -45,6 +45,12 @@ def parse_study(study_data):
     completion_date = status_mod.get("primaryCompletionDateStruct", {}).get("date", "")
     has_results = study_data.get("hasResults", False)
 
+    # Locations / Countries
+    contacts_mod = protocol.get("contactsLocationsModule", {})
+    locations = contacts_mod.get("locations", [])
+    countries = list(set([loc.get("country", "") for loc in locations if loc.get("country")]))
+    countries_str = json.dumps(countries) if countries else ""
+
     return {
         "study_id": nct_id,
         "title": title,
@@ -56,7 +62,8 @@ def parse_study(study_data):
         "start_date": start_date,
         "completion_date": completion_date,
         "has_results": has_results,
-        "why_stopped": why_stopped
+        "why_stopped": why_stopped,
+        "countries": countries_str
     }
 
 def parse_pubmed_article(article_data):
@@ -128,7 +135,8 @@ def parse_pubmed_article(article_data):
         "start_date": start_date,
         "completion_date": completion_date,
         "has_results": has_results,
-        "why_stopped": why_stopped
+        "why_stopped": why_stopped,
+        "countries": '["Global / Literature"]'
     }
 
 def main():

@@ -57,11 +57,9 @@ st.markdown("""
         color: #e0e0e0;
     }
 
-    /* NASCONDE MENU DESTRO E FOOTER, MA LASCIA IL PULSANTE SIDEBAR */
+    /* NASCONDE SOLO MENU HAMBURGER E FOOTER PER NON ROMPERE LA SIDEBAR */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    [data-testid="stToolbar"] {visibility: hidden;}
-    [data-testid="stStatusWidget"] {visibility: hidden;}
     </style>
 """, unsafe_allow_html=True)
 

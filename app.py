@@ -55,6 +55,13 @@ st.markdown("""
         margin-right: 5px;
         color: #e0e0e0;
     }
+    
+    /* NASCONDE HEADER, MENU E FOOTER DI STREAMLIT */
+    #MainMenu {visibility: hidden;}
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
+    .stApp > header {visibility: hidden;}
+    [data-testid="stHeader"] {display: none;}
     </style>
 """, unsafe_allow_html=True)
 

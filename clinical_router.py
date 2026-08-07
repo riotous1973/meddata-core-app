@@ -85,10 +85,54 @@ def expand_query(natural_query, api_key=None):
         return [f"API_ERROR: {str(e)}"]
 
 @st.cache_data(show_spinner=False)
-def find_best_matches_semantic(natural_query, api_key=None, intent_filter="ALL"):
+def extract_patient_profile(clinical_text, api_key=None):
+    """
+    Estrae i parametri clinici (Età, Sesso, Mutazioni) dal referto in formato testo libero.
+    """
+    api_key = api_key or os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        try:
+            import streamlit as st
+            api_key = st.secrets.get("GEMINI_API_KEY")
+        except:
+            pass
+            
+    if not genai or not api_key:
+        return {"age": None, "sex": "ALL", "biomarkers": ""}
+        
+    try:
+        client = genai.Client(api_key=api_key)
+        
+        prompt = (
+            f"Estrai le seguenti informazioni cliniche dal testo fornito. "
+            f"Testo: '{clinical_text}'\n\n"
+            f"Rispondi ESATTAMENTE e SOLO con un oggetto JSON valido con queste chiavi:\n"
+            f"- 'age' (numero intero, oppure null se non specificata)\n"
+            f"- 'sex' (stringa: 'MALE', 'FEMALE', oppure 'ALL' se non specificato)\n"
+            f"- 'biomarkers' (stringa unica con le mutazioni separate da virgola, es. 'BRAF, KRAS', oppure stringa vuota se non ci sono)\n"
+            f"Niente markdown, niente spiegazioni, solo il JSON puro."
+        )
+        
+        response = client.models.generate_content(
+            model='gemini-flash-latest',
+            contents=prompt,
+        )
+        
+        import json
+        raw_json = response.text.replace("```json", "").replace("```", "").strip()
+        data = json.loads(raw_json)
+        return data
+        
+    except Exception as e:
+        print(f"Errore estrazione profilo: {e}")
+        return {"age": None, "sex": "ALL", "biomarkers": ""}
+
+@st.cache_data(show_spinner=False)
+def find_best_matches_semantic(natural_query, api_key=None, intent_filter="ALL", patient_profile=None):
     """
     Effettua la ricerca sul database usando l'array di termini espansi dinamicamente.
     intent_filter può essere: 'OPEN', 'COMPLETED', 'ALL'
+    patient_profile: dict con 'age', 'sex', 'biomarkers'
     """
     synonyms = expand_query(natural_query, api_key=api_key)
     
@@ -97,7 +141,7 @@ def find_best_matches_semantic(natural_query, api_key=None, intent_filter="ALL")
     
     # Costruiamo la query dinamicamente. WHERE 1=0 serve per concatenare in sicurezza gli OR
     base_query = '''
-        SELECT study_id, title, conditions, phases, status, start_date, completion_date, has_results, why_stopped, countries
+        SELECT study_id, title, conditions, phases, status, start_date, completion_date, has_results, why_stopped, countries, elig_sex, elig_min_age, elig_max_age, elig_criteria
         FROM studies
         WHERE (1=0
     '''
@@ -106,8 +150,13 @@ def find_best_matches_semantic(natural_query, api_key=None, intent_filter="ALL")
     order_params = []
     params = []
     
-    # Per ogni sinonimo generato dall'AI, cerchiamo nella patologia o nel titolo
-    for idx, syn in enumerate(synonyms):
+    # Biomarcatori aggiunti come sinonimi per dare più peso ai trial che li menzionano
+    search_terms = list(synonyms)
+    if patient_profile and patient_profile.get("biomarkers"):
+        biomarks = [b.strip() for b in patient_profile["biomarkers"].split(",") if b.strip()]
+        search_terms.extend(biomarks)
+    
+    for idx, syn in enumerate(search_terms):
         base_query += ' OR conditions LIKE ? OR title LIKE ?'
         params.extend([f'%{syn}%', f'%{syn}%'])
         
@@ -127,17 +176,52 @@ def find_best_matches_semantic(natural_query, api_key=None, intent_filter="ALL")
     elif intent_filter == "COMPLETED":
         base_query += " AND (UPPER(status) LIKE '%COMPLETED%' OR source='PubMed')"
     
-    # Combiniamo query, filtri e ordinamento
-    final_query = base_query + order_by_clause + " LIMIT 5"
-    
-    # I parametri devono essere raddoppiati perché sono usati sia nel WHERE che nell'ORDER BY
+    # Estraiamo un pool più largo per poter filtrare in memoria i pazienti
+    final_query = base_query + order_by_clause + " LIMIT 50"
     params = params + order_params
     
     cursor.execute(final_query, params)
-    results = cursor.fetchall()
+    raw_results = cursor.fetchall()
     conn.close()
     
-    return results, synonyms
+    # POST-FILTERING (Paziente)
+    filtered_results = []
+    for row in raw_results:
+        study_id, title, conditions, phases, status, start_date, comp_date, has_res, why_stopped, countries, elig_sex, elig_min_age, elig_max_age, elig_criteria = row
+        
+        # Se c'è un profilo paziente
+        if patient_profile:
+            p_sex = patient_profile.get("sex", "ALL")
+            p_age = patient_profile.get("age")
+            
+            # 1. Filtro Sesso
+            if p_sex in ["MALE", "FEMALE"] and elig_sex in ["MALE", "FEMALE"]:
+                if p_sex != elig_sex:
+                    continue # Scartato: sesso non compatibile
+            
+            # 2. Filtro Età
+            if p_age is not None:
+                # Estraiamo l'età minima (es. "18 Years" -> 18)
+                import re
+                try:
+                    if elig_min_age:
+                        min_match = re.search(r'(\d+)', elig_min_age)
+                        if min_match and int(min_match.group(1)) > p_age:
+                            continue # Paziente troppo giovane
+                    if elig_max_age:
+                        max_match = re.search(r'(\d+)', elig_max_age)
+                        if max_match and int(max_match.group(1)) < p_age:
+                            continue # Paziente troppo vecchio
+                except:
+                    pass
+        
+        # Rimuoviamo i campi extra usati solo per il filtro in modo da non rompere l'unpacking
+        filtered_results.append((study_id, title, conditions, phases, status, start_date, comp_date, has_res, why_stopped, countries))
+        
+        if len(filtered_results) >= 5:
+            break
+            
+    return filtered_results, synonyms
 
 def print_report_semantic(results, original_query, synonyms):
     print("\n" + "="*80)

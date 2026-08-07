@@ -68,8 +68,52 @@ st.markdown("""
 st.title("🏥 MedData Core: Clinical Router")
 st.markdown("### Il motore di smistamento definitivo per i trial clinici.")
 
-# Barra laterale rimossa per mantenere l'interfaccia pulita per i medici.
-# La chiave API verrà letta automaticamente dalle Streamlit Secrets (st.secrets o os.environ).
+# Inizializzazione Session State per il Patient Profile
+if 'patient_profile' not in st.session_state:
+    st.session_state.patient_profile = {"age": None, "sex": "ALL", "biomarkers": ""}
+
+# Sidebar per il Profilo Paziente
+with st.sidebar:
+    st.header("🧬 Patient Profile")
+    st.write("Incolla un referto o digita i dati clinici. L'IA estrarrà i parametri per filtrare i trial compatibili.")
+    
+    clinical_text = st.text_area("Testo Clinico / Referto", height=150, placeholder="Es. Paziente donna 62 anni, metastasi ossee, KRAS+")
+    
+    if st.button("🧠 Analizza Referto"):
+        if clinical_text.strip():
+            with st.spinner("Estrazione dati con AI in corso..."):
+                extracted = clinical_router.extract_patient_profile(clinical_text)
+                st.session_state.patient_profile = extracted
+                st.success("Estrazione completata!")
+        else:
+            st.warning("Inserisci del testo da analizzare.")
+            
+    st.divider()
+    
+    st.subheader("Parametri Estratti")
+    
+    current_age = st.session_state.patient_profile.get("age")
+    age_val = st.number_input(
+        "Età Paziente (0 = Qualsiasi)", 
+        min_value=0, 
+        max_value=120, 
+        value=int(current_age) if current_age is not None else 0
+    )
+    st.session_state.patient_profile["age"] = age_val if age_val > 0 else None
+        
+    sex_options = ["ALL", "FEMALE", "MALE"]
+    curr_sex = st.session_state.patient_profile.get("sex", "ALL")
+    st.session_state.patient_profile["sex"] = st.selectbox(
+        "Sesso (ALL = Qualsiasi)", 
+        options=sex_options, 
+        index=sex_options.index(curr_sex) if curr_sex in sex_options else 0
+    )
+    
+    st.session_state.patient_profile["biomarkers"] = st.text_input(
+        "Biomarcatori", 
+        value=st.session_state.patient_profile.get("biomarkers", ""),
+        help="Separati da virgola. Es: KRAS, BRAF"
+    )
 
 tab1, tab2 = st.tabs(["🔍 Router Clinico", "📊 Analytics Dashboard"])
 
@@ -100,9 +144,12 @@ with tab1:
         else:
             # Processing Visivo
             with st.spinner("🤖 L'intelligenza Artificiale sta traducendo ed espandendo la query..."):
-                time.sleep(0.8) # Piccola pausa scenica per simulare il caricamento LLM
-                # Richiamo la funzione dal modulo originale (leggerà la chiave da os.environ)
-                results, synonyms = clinical_router.find_best_matches_semantic(query, intent_filter=selected_intent)
+                # Esecuzione del routing (con AI semantica e applicazione del Patient Profile)
+                results, synonyms = clinical_router.find_best_matches_semantic(
+                    query, 
+                    intent_filter=selected_intent,
+                    patient_profile=st.session_state.patient_profile
+                )
             
             st.success("Ricerca completata!")
             

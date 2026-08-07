@@ -26,7 +26,11 @@ def init_db():
             completion_date TEXT,
             has_results BOOLEAN,
             why_stopped TEXT,
-            countries TEXT
+            countries TEXT,
+            elig_sex TEXT,
+            elig_min_age TEXT,
+            elig_max_age TEXT,
+            elig_criteria TEXT
         )
     ''')
     
@@ -53,8 +57,8 @@ def insert_records(records):
     cursor = conn.cursor()
     
     insert_query = '''
-        INSERT INTO studies (study_id, title, conditions, phases, interventions, source, status, start_date, completion_date, has_results, why_stopped, countries)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO studies (study_id, title, conditions, phases, interventions, source, status, start_date, completion_date, has_results, why_stopped, countries, elig_sex, elig_min_age, elig_max_age, elig_criteria)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(study_id) DO UPDATE SET
             title=excluded.title,
             conditions=excluded.conditions,
@@ -66,7 +70,11 @@ def insert_records(records):
             completion_date=excluded.completion_date,
             has_results=excluded.has_results,
             why_stopped=excluded.why_stopped,
-            countries=excluded.countries
+            countries=excluded.countries,
+            elig_sex=excluded.elig_sex,
+            elig_min_age=excluded.elig_min_age,
+            elig_max_age=excluded.elig_max_age,
+            elig_criteria=excluded.elig_criteria
     '''
     
     data_tuples = []
@@ -83,7 +91,11 @@ def insert_records(records):
             r.get("completion_date"),
             r.get("has_results", False),
             r.get("why_stopped"),
-            r.get("countries")
+            r.get("countries"),
+            r.get("elig_sex", "ALL"),
+            r.get("elig_min_age", ""),
+            r.get("elig_max_age", ""),
+            r.get("elig_criteria", "")
         ))
         
     cursor.executemany(insert_query, data_tuples)

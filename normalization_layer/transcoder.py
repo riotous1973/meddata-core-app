@@ -50,6 +50,13 @@ def parse_study(study_data):
     locations = contacts_mod.get("locations", [])
     countries = list(set([loc.get("country", "") for loc in locations if loc.get("country")]))
     countries_str = json.dumps(countries) if countries else ""
+    
+    # Eligibility
+    elig_mod = protocol.get("eligibilityModule", {})
+    elig_sex = elig_mod.get("sex", "ALL")
+    elig_min_age = elig_mod.get("minimumAge", "")
+    elig_max_age = elig_mod.get("maximumAge", "")
+    elig_criteria = clean_text(elig_mod.get("eligibilityCriteria", ""))
 
     return {
         "study_id": nct_id,
@@ -63,7 +70,11 @@ def parse_study(study_data):
         "completion_date": completion_date,
         "has_results": has_results,
         "why_stopped": why_stopped,
-        "countries": countries_str
+        "countries": countries_str,
+        "elig_sex": elig_sex,
+        "elig_min_age": elig_min_age,
+        "elig_max_age": elig_max_age,
+        "elig_criteria": elig_criteria
     }
 
 def parse_pubmed_article(article_data):
@@ -136,7 +147,11 @@ def parse_pubmed_article(article_data):
         "completion_date": completion_date,
         "has_results": has_results,
         "why_stopped": why_stopped,
-        "countries": '["Global / Literature"]'
+        "countries": '["Global / Literature"]',
+        "elig_sex": "ALL",
+        "elig_min_age": "",
+        "elig_max_age": "",
+        "elig_criteria": ""
     }
 
 def main():

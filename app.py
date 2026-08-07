@@ -61,11 +61,8 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     
-    /* NASCONDE I BADGE DI STREAMLIT CLOUD (FORK, GITHUB) */
-    .viewerBadge_container {display: none !important;}
-    .viewerBadge_link {display: none !important;}
-    #viewerBadge {display: none !important;}
-    a[href^="https://github.com"] {display: none !important;}
+    /* NASCONDE LA TOOLBAR DESTRA (DOVE SI TROVA GITHUB) */
+    [data-testid="stToolbar"] {visibility: hidden !important;}
     
     /* AGGIUNGE TESTO AL PULSANTE DELLA SIDEBAR QUANDO È CHIUSA */
     [data-testid="collapsedControl"]::after {

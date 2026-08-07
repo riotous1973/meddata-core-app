@@ -101,27 +101,39 @@ def find_best_matches_semantic(natural_query, api_key=None, intent_filter="ALL")
         FROM studies
         WHERE (1=0
     '''
+    
+    order_by_clause = " ORDER BY ("
+    order_params = []
     params = []
     
     # Per ogni sinonimo generato dall'AI, cerchiamo nella patologia o nel titolo
-    for syn in synonyms:
+    for idx, syn in enumerate(synonyms):
         base_query += ' OR conditions LIKE ? OR title LIKE ?'
         params.extend([f'%{syn}%', f'%{syn}%'])
         
+        # Un match esatto o parziale nel titolo vale di più (es. 2 punti), nelle conditions 1 punto
+        score_term = f"(CASE WHEN title LIKE ? THEN 2 ELSE 0 END) + (CASE WHEN conditions LIKE ? THEN 1 ELSE 0 END)"
+        if idx > 0:
+            order_by_clause += " + "
+        order_by_clause += score_term
+        order_params.extend([f'%{syn}%', f'%{syn}%'])
+        
     base_query += ')'
+    order_by_clause += ") DESC"
     
     # Logica Filtro Intent
     if intent_filter == "OPEN":
         base_query += " AND source='ClinicalTrials' AND (UPPER(status) LIKE '%RECRUITING%' OR UPPER(status) LIKE '%ACTIVE%')"
     elif intent_filter == "COMPLETED":
         base_query += " AND (UPPER(status) LIKE '%COMPLETED%' OR source='PubMed')"
-    else:
-        # Per 'ALL', manteniamo un ORDER BY di fallback se lo si desidera
-        pass
-        
-    base_query += ' LIMIT 5'
     
-    cursor.execute(base_query, params)
+    # Combiniamo query, filtri e ordinamento
+    final_query = base_query + order_by_clause + " LIMIT 5"
+    
+    # I parametri devono essere raddoppiati perché sono usati sia nel WHERE che nell'ORDER BY
+    params = params + order_params
+    
+    cursor.execute(final_query, params)
     results = cursor.fetchall()
     conn.close()
     

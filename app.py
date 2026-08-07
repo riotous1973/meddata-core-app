@@ -79,7 +79,7 @@ with tab1:
     st.divider()
 
     # Form di Ricerca per abilitare il tasto "Invio"
-    with st.form(key='search_form', border=False):
+    with st.form(key='search_form'):
         # Area di Input
         query = st.text_input("Inserisci la patologia (es. 'Tumore al rene', 'Caduta dei capelli', 'Pressione alta')", placeholder="Cerca patologia...")
 
@@ -214,7 +214,8 @@ with tab2:
     try:
         cursor.execute("SELECT phases, conditions FROM studies")
         rows = cursor.fetchall()
-    except sqlite3.OperationalError:
+    except sqlite3.Error as e:
+        st.error(f"Errore database: {e}")
         rows = []
     
     conn.close()

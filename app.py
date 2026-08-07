@@ -78,19 +78,23 @@ with tab1:
 
     st.divider()
 
-    # Area di Input
-    query = st.text_input("Inserisci la patologia (es. 'Tumore al rene', 'Caduta dei capelli', 'Pressione alta')", placeholder="Cerca patologia...")
+    # Form di Ricerca per abilitare il tasto "Invio"
+    with st.form(key='search_form', border=False):
+        # Area di Input
+        query = st.text_input("Inserisci la patologia (es. 'Tumore al rene', 'Caduta dei capelli', 'Pressione alta')", placeholder="Cerca patologia...")
 
-    # Filtri di Intento
-    intent_options = {
-        "⚪ Ricerca Globale (Tutti i risultati)": "ALL",
-        "🟢 Trial Aperti (Solo Sperimentali)": "OPEN",
-        "🔵 Studi Conclusi & Letteratura": "COMPLETED"
-    }
-    selected_intent_label = st.radio("Filtra per stato del trial:", options=list(intent_options.keys()), horizontal=True)
-    selected_intent = intent_options[selected_intent_label]
+        # Filtri di Intento
+        intent_options = {
+            "⚪ Ricerca Globale (Tutti i risultati)": "ALL",
+            "🟢 Trial Aperti (Solo Sperimentali)": "OPEN",
+            "🔵 Studi Conclusi & Letteratura": "COMPLETED"
+        }
+        selected_intent_label = st.radio("Filtra per stato del trial:", options=list(intent_options.keys()), horizontal=True)
+        selected_intent = intent_options[selected_intent_label]
 
-    if st.button("Cerca Trial 🚀", type="primary"):
+        submit_button = st.form_submit_button("Cerca Trial 🚀", type="primary")
+
+    if submit_button:
         if not query.strip():
             st.warning("Per favore, inserisci una patologia o un termine di ricerca.")
         else:

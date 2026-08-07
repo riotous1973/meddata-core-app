@@ -57,22 +57,6 @@ st.markdown("""
         color: #e0e0e0;
     }
 
-    /* NASCONDE IL MENU HAMBURGER E IL FOOTER */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    
-    /* NASCONDE LA TOOLBAR DESTRA (DOVE SI TROVA GITHUB) */
-    [data-testid="stToolbar"] {visibility: hidden !important;}
-    
-    /* AGGIUNGE TESTO AL PULSANTE DELLA SIDEBAR QUANDO È CHIUSA */
-    [data-testid="collapsedControl"]::after {
-        content: " 🧬 Apri Patient Profile";
-        margin-left: 10px;
-        font-weight: bold;
-        color: #b0b0b0;
-        vertical-align: middle;
-        line-height: 2.5;
-    }
     </style>
 """, unsafe_allow_html=True)
 

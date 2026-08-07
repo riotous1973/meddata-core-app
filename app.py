@@ -79,14 +79,20 @@ with st.sidebar:
     
     clinical_text = st.text_area("Testo Clinico / Referto", height=150, placeholder="Es. Paziente donna 62 anni, metastasi ossee, KRAS+")
     
-    if st.button("🧠 Analizza Referto"):
-        if clinical_text.strip():
-            with st.spinner("Estrazione dati con AI in corso..."):
-                extracted = clinical_router.extract_patient_profile(clinical_text)
-                st.session_state.patient_profile = extracted
-                st.success("Estrazione completata!")
-        else:
-            st.warning("Inserisci del testo da analizzare.")
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("🧠 Analizza Referto"):
+            if clinical_text.strip():
+                with st.spinner("Estrazione dati con AI in corso..."):
+                    extracted = clinical_router.extract_patient_profile(clinical_text)
+                    st.session_state.patient_profile = extracted
+                    st.success("Estrazione completata!")
+            else:
+                st.warning("Inserisci del testo da analizzare.")
+    with col2:
+        if st.button("🧹 Pulisci Profilo"):
+            st.session_state.patient_profile = {"age": None, "sex": "ALL", "biomarkers": ""}
+            st.rerun()
             
     st.divider()
     

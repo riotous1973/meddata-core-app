@@ -8,6 +8,16 @@ from collections import Counter
 import clinical_router
 import importlib
 
+import os
+import gzip
+import shutil
+
+# Decompressione DB se non esiste
+if not os.path.exists("clinical_data.db") and os.path.exists("clinical_data.db.gz"):
+    with gzip.open("clinical_data.db.gz", "rb") as f_in:
+        with open("clinical_data.db", "wb") as f_out:
+            shutil.copyfileobj(f_in, f_out)
+
 # Forza il reload del modulo per aggirare la cache di Streamlit
 importlib.reload(clinical_router)
 

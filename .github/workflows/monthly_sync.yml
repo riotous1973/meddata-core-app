@@ -1,0 +1,41 @@
+name: Monthly ClinicalTrials Sync
+
+on:
+  schedule:
+    # Esegue il workflow alle 03:00 UTC del 1° giorno di ogni mese
+    - cron: '0 3 1 * *'
+  workflow_dispatch:
+    # Permette di lanciare l'aggiornamento manualmente dal pannello GitHub Actions
+
+jobs:
+  update-database:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          # Solo le dipendenze necessarie per lo script di ingestion
+          pip install --upgrade pip
+
+      - name: Run Monthly Sync
+        run: |
+          cd ingestion_layer
+          python monthly_sync.py
+
+      - name: Commit and Push Changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add clinical_data.db.gz
+          # Se non ci sono modifiche, non fare nulla
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Automated Data Update: $(date +'%Y-%m-%d')" && git push)

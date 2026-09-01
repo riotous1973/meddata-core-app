@@ -1,7 +1,10 @@
 import json
 import os
 import re
-import db_manager
+try:
+    from normalization_layer import db_manager
+except ImportError:
+    import db_manager
 
 def clean_text(text):
     if not text:
